@@ -2,16 +2,46 @@
 
 Script::Script () {} 
 
+void Script::expandMacro(const Macro & macro) {
+    m_keyboard.queueBackSpace(macro.trigger.length() + 1); // We add one to get rid of the tab
+    m_keyboard.queue(macro.rawText);
+    m_keyboard.sendQueue(); 
+    m_keyboard.clearQueue(); 
+    for (unsigned int i = 1; i <= macro.m_waypoints.size(); ++i) {
+        std::cout << macro.m_waypoints.size() << std::endl; 
+        while (m_keyboard.poll() != L"TAB") {}
+        m_keyboard.queueLeft(macro.rawText.length() - macro.m_waypoints.at(i) + 1);
+        m_keyboard.sendQueue(); 
+        m_keyboard.clearQueue(); 
+    }
+}
+
 
 Script::run(std::string path) {
     init(path);
     while (true) { 
-        auto keyEvent = m_keyboard.poll(); 
-        if (keyEvent == "t") {
-            m_keyboard.queue(m_macros[0].rawText); 
-            m_keyboard.queueLeft(m_macros[0].rawText.length() - m_macros[0].m_waypoints[1]); 
-            m_keyboard.sendQueue(); 
-            m_keyboard.clearQueue(); 
+        auto keyEvent = m_keyboard.poll();
+        std::wcout << keyEvent; 
+        if (keyEvent == L"TAB") {
+            for (auto macro : m_macros) {
+                //std::wcout << "Buffer: " << m_buffer << std::endl; 
+                //std::wcout << "Substr buffer: " << selection << std::endl;
+                if (m_buffer.length() >= macro.trigger.length()) {
+                    std::wstring selection = m_buffer.substr(m_buffer.length() - macro.trigger.length(), macro.trigger.length());
+                    if (macro.trigger == selection) { 
+                        
+                        m_buffer.clear(); 
+                        expandMacro(macro);
+                        break; 
+                    }
+                }
+            }
+        }
+        else if (keyEvent == L"SPACE") { 
+            m_buffer.clear(); 
+        }
+        else {
+            m_buffer += keyEvent; 
         }
 
     }
@@ -57,7 +87,7 @@ Script::init(std::string path) {
                             captureString = captureString.substr(1, captureString.length() - 2); // Remove dollar sign and quotation mark
                             auto indice = std::stoi(captureString); 
                             //std::cout << position << std::endl; 
-                            macro.m_waypoints[i] = position; 
+                            macro.m_waypoints[indice] = position; 
                         }
                     }
                     else { 
@@ -75,6 +105,11 @@ Script::init(std::string path) {
         fout.open("snippetoutput.txt"); 
         fout << macro.rawText; 
         m_macros.push_back(macro); 
+        //std::wcout << "Raw text: " << macro.rawText << "\n"; 
+        //std::wcout << "Trigger word: " << macro.trigger << "\n"; 
+        for (auto i : macro.m_waypoints) { 
+            std::cout << "Waypoint at: " << i.first << " is " << i.second << "\n"; 
+        }
 
     }
 }

@@ -8,7 +8,7 @@ Keyboard::queue(std::wstring input) {
     m_queueSize += input.length(); 
 } 
 
-std::string Keyboard::poll() {
+std::wstring Keyboard::poll() {
     
     for (auto it = m_keys.begin(); it != m_keys.end(); it++) { 
         if (GetAsyncKeyState(it->first) && !it->second.cooldown) { 
@@ -19,7 +19,7 @@ std::string Keyboard::poll() {
             it->second.cooldown = false; 
         }  
     }
-    return ""; 
+    return L""; 
 }
 
 Keyboard::queueLeft(unsigned int amount) {

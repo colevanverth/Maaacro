@@ -40,8 +40,8 @@ public:
 
 struct Key {
     bool cooldown; 
-    std::string association; 
-    Key(std::string association)
+    std::wstring association; 
+    Key(std::wstring association)
         : association(association) { 
             cooldown = false; 
         }
@@ -52,9 +52,10 @@ class Keyboard {
     unsigned int activeKey; 
     bool activeKeyEnable = false; 
     std::unordered_map<unsigned int, Key> m_keys{
-        {65, Key("a")}, {66, Key("b")}, {67, Key("c")}, {68, Key("d")}, {69, Key("e")}, {70, Key("f")}, {71, Key("g")}, {72, Key("h")}, {73, Key("i")}, 
-        {74, Key("j")}, {75, Key("k")}, {76, Key("l")}, {77, Key("m")}, {78, Key("n")}, {79, Key("o")}, {80, Key("p")}, {81, Key("q")}, {82, Key("r")}, 
-        {83, Key("s")}, {84, Key("t")}, {85, Key("u")}, {86, Key("v")}, {87, Key("w")}, {88, Key("x")}, {89, Key("y")}, {90, Key("z")}, {9, Key("TAB")}
+        {65, Key(L"a")}, {66, Key(L"b")}, {67, Key(L"c")}, {68, Key(L"d")}, {69, Key(L"e")}, {70, Key(L"f")}, {71, Key(L"g")}, {72, Key(L"h")}, {73, Key(L"i")}, 
+        {74, Key(L"j")}, {75, Key(L"k")}, {76, Key(L"l")}, {77, Key(L"m")}, {78, Key(L"n")}, {79, Key(L"o")}, {80, Key(L"p")}, {81, Key(L"q")}, {82, Key(L"r")}, 
+        {83, Key(L"s")}, {84, Key(L"t")}, {85, Key(L"u")}, {86, Key(L"v")}, {87, Key(L"w")}, {88, Key(L"x")}, {89, Key(L"y")}, {90, Key(L"z")}, {9, Key(L"TAB")},
+        {32, Key(L"SPACE")}
     };
 
     std::vector<QueueComponent> m_queue;
@@ -69,6 +70,6 @@ public:
     sendQueue();                                            // Sends the output queue
     clearQueue();                                           // Clears the output queue
 
-    std::string poll();                                     // Polls keyboard and returns a string of output                       
+    std::wstring poll();                                     // Polls keyboard and returns a string of output                       
 
 }; 
