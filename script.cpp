@@ -7,7 +7,10 @@ void Script::expandMacro(const Macro & macro) {
     m_keyboard.queue(macro.rawText);
     m_keyboard.sendQueue(); 
     m_keyboard.clearQueue(); 
-    for (unsigned int i = 1; i <= macro.m_waypoints.size(); ++i) {
+    m_keyboard.queueLeft(macro.rawText.length() - macro.m_waypoints.at(1));
+        m_keyboard.sendQueue(); 
+        m_keyboard.clearQueue(); 
+    for (unsigned int i = 2; i <= macro.m_waypoints.size(); ++i) {
         std::cout << macro.m_waypoints.size() << std::endl; 
         while (m_keyboard.poll() != L"TAB") {}
         m_keyboard.queueLeft(macro.rawText.length() - macro.m_waypoints.at(i) + 1);
