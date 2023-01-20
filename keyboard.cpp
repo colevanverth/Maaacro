@@ -14,6 +14,8 @@ std::wstring Keyboard::poll() {
         if (GetAsyncKeyState(it->first) && !it->second.cooldown) { 
             it->second.cooldown = true; 
             return it->second.association; 
+            // Special case goes in here. If z is pressed, and CTRL is also pressed, 
+            // then we return L"CTRLZ" 
         }
         if (!GetAsyncKeyState(it->first) && it->second.cooldown) { 
             it->second.cooldown = false; 
@@ -56,17 +58,20 @@ Keyboard::sendQueue() {
     for (auto qc : m_queue) { 
         if (qc.getType() == 1) { 
             for (unsigned int i = 0; i < qc.getWString().length(); ++i) { 
+                if ((short)qc.getWString()[i] == 10) { 
+                    keys[keyIndex].ki.wVk = VK_RETURN; 
+                }
+                else { 
+                    keys[keyIndex].ki.wScan = (short)qc.getWString()[i];
+                    keys[keyIndex].ki.dwFlags = KEYEVENTF_UNICODE; 
+                }
                 keys[keyIndex].type=INPUT_KEYBOARD;
-                keys[keyIndex].ki.wScan=0;
-                keys[keyIndex].ki.dwFlags=0;
                 keys[keyIndex].ki.time=0;
-                keys[keyIndex].ki.dwExtraInfo=0;
-                keys[keyIndex].ki.wVk=0; 
-                keys[keyIndex].ki.wScan = (int)qc.getWString()[i];
-                keys[keyIndex].ki.dwFlags |= KEYEVENTF_UNICODE;
+                keys[keyIndex].ki.dwExtraInfo = GetMessageExtraInfo();
+                std::cout << (int)qc.getWString()[i] << std::endl;
                 keys[keyIndex + 1] = keys[keyIndex];
                 keys[keyIndex + 1].ki.dwFlags |= KEYEVENTF_KEYUP;
-                keyIndex += 2;
+                keyIndex += 2   ;
             }
         }
         else if (qc.getType() == 0) {

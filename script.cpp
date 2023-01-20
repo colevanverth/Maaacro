@@ -5,15 +5,35 @@ Script::Script () {}
 void Script::expandMacro(const Macro & macro) {
     m_keyboard.queueBackSpace(macro.trigger.length() + 1); // We add one to get rid of the tab
     m_keyboard.queue(macro.rawText);
+    m_keyboard.queueLeft(macro.rawText.length() - macro.m_waypoints.at(1));
     m_keyboard.sendQueue(); 
-    m_keyboard.clearQueue(); 
-    for (unsigned int i = 1; i <= macro.m_waypoints.size(); ++i) {
+    m_keyboard.clearQueue();
+ 
+    unsigned int waypointCounter = 2; 
+    while (waypointCounter <= macro.m_waypoints.size()) { 
+        if (m_keyboard.poll() == L"TAB") { 
+            m_keyboard.queueBackSpace(1);
+            m_keyboard.queueRight(macro.m_waypoints.at(waypointCounter) - macro.m_waypoints.at(waypointCounter - 1));
+            m_keyboard.sendQueue(); 
+            m_keyboard.clearQueue(); 
+            waypointCounter++; 
+        }
+        // TODO (Cole): Break while loop on mouse click
+        // Break on CTRL A ()
+        // Break on CTRL Z (Make a buffer in the Keyboard::poll() functioon)
+        // Break on Escape
+    }
+
+    /*for (unsigned int i = 2; i <= macro.m_waypoints.size(); ++i) {
         std::cout << macro.m_waypoints.size() << std::endl; 
-        while (m_keyboard.poll() != L"TAB") {}
-        m_keyboard.queueLeft(macro.rawText.length() - macro.m_waypoints.at(i) + 1);
+        while (m_keyboard.poll() != L"TAB") {
+            // Check for mouse click, ctrl z, and escape
+        }
+        m_keyboard.queueBackSpace(1);
+        m_keyboard.queueRight(macro.m_waypoints.at(i) - macro.m_waypoints.at(i - 1));
         m_keyboard.sendQueue(); 
         m_keyboard.clearQueue(); 
-    }
+    }*/
 }
 
 
@@ -49,7 +69,7 @@ Script::run(std::string path) {
 } 
 
 Script::init(std::string path) { 
-      // Sets up input file stream 
+    // Sets up input file stream 
     std::wifstream fin; 
     fin.open(path); 
     if (fin.fail()) { std::cout << "Error opening file: " << path << " \n"; }
@@ -107,9 +127,6 @@ Script::init(std::string path) {
         m_macros.push_back(macro); 
         //std::wcout << "Raw text: " << macro.rawText << "\n"; 
         //std::wcout << "Trigger word: " << macro.trigger << "\n"; 
-        for (auto i : macro.m_waypoints) { 
-            std::cout << "Waypoint at: " << i.first << " is " << i.second << "\n"; 
-        }
 
     }
 }
