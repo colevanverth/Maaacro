@@ -1,44 +1,35 @@
 #include "script.h"
 
-Script::Script () {} 
+Script::Script (std::string pathname) 
+    : m_scriptPath(pathname) {} 
 
 void Script::expandMacro(const Macro & macro) {
     m_keyboard.queueBackSpace(macro.trigger.length() + 1); // We add one to get rid of the tab
-    m_keyboard.queue(macro.rawText);
-    m_keyboard.queueLeft(macro.rawText.length() - macro.m_waypoints.at(1));
+    m_keyboard.queue(macro.rawText); // Queues the initial raw text. 
+    m_keyboard.queueLeft(macro.rawText.length() - macro.m_waypoints.at(1)); // Move caret to initial waypoint. 
     m_keyboard.sendQueue(); 
     m_keyboard.clearQueue();
  
-    unsigned int waypointCounter = 2; 
+    unsigned int waypointCounter = 2; // Starts at two because caret is already at first waypoint.
     while (waypointCounter <= macro.m_waypoints.size()) { 
         if (m_keyboard.poll() == L"TAB") { 
-            m_keyboard.queueBackSpace(1);
-            m_keyboard.queueRight(macro.m_waypoints.at(waypointCounter) - macro.m_waypoints.at(waypointCounter - 1));
+            m_keyboard.queueBackSpace(1); // Deletes the tab
+            m_keyboard.queueRight(macro.m_waypoints.at(waypointCounter) - macro.m_waypoints.at(waypointCounter - 1)); 
             m_keyboard.sendQueue(); 
             m_keyboard.clearQueue(); 
             waypointCounter++; 
         }
         // TODO (Cole): Break while loop on mouse click
-        // Break on CTRL A ()
-        // Break on CTRL Z (Make a buffer in the Keyboard::poll() functioon)
-        // Break on Escape
+        // TODO: Break on CTRL A ()
+        // TODO: Break on CTRL Z (Make a buffer in the Keyboard::poll() functioon)
+        // TODO: Break on Escape
+        // TODO: Add support for mirrors
+        // TODO: (Cole) Add special case for doing tabs so it doesnt break in some programs. 
     }
-
-    /*for (unsigned int i = 2; i <= macro.m_waypoints.size(); ++i) {
-        std::cout << macro.m_waypoints.size() << std::endl; 
-        while (m_keyboard.poll() != L"TAB") {
-            // Check for mouse click, ctrl z, and escape
-        }
-        m_keyboard.queueBackSpace(1);
-        m_keyboard.queueRight(macro.m_waypoints.at(i) - macro.m_waypoints.at(i - 1));
-        m_keyboard.sendQueue(); 
-        m_keyboard.clearQueue(); 
-    }*/
 }
 
-
-Script::run(std::string path) {
-    init(path);
+void Script::run() {
+    init();
     while (true) { 
         auto keyEvent = m_keyboard.poll();
         std::wcout << keyEvent; 
@@ -68,30 +59,28 @@ Script::run(std::string path) {
 
 } 
 
-Script::init(std::string path) { 
-    // Sets up input file stream 
+void Script::init() { 
     std::wifstream fin; 
-    fin.open(path); 
-    if (fin.fail()) { std::cout << "Error opening file: " << path << " \n"; }
-
-    // Buffer for a full line and just a word
-    std::wstring bufferLine, bufferWord; 
+    fin.open(m_scriptPath); 
+    if (fin.fail()) { std::cout << "Error opening file: " << m_scriptPath << " \n"; } 
+    std::wstring bufferLine, bufferWord; // Buffers for full line and whitespace separated words. 
     
-    while (std::getline(fin, bufferLine)) {                         // Set level of loop
+    while (std::getline(fin, bufferLine)) { // Set level of loop
         Macro macro; 
         std::wstringstream bufferStream(bufferLine); 
         bufferStream >> bufferWord;
             
-        if (bufferWord == L"snippet") {     
-                                // Individual macro level of loop
+        if (bufferWord == L"snippet") { // Individual macro level of loop
             bufferStream >> bufferWord; 
             macro.trigger = bufferWord; 
             std::getline(fin, bufferLine); 
             bufferStream << bufferLine; 
             unsigned int position = 0; 
+
             while (bufferLine != L"endsnippet") {
                 bool capture = false; 
                 std::wstring captureString; 
+
                 for (unsigned int i = 0; i < bufferLine.length(); ++i) { // Individual line
                     if (i > 0) {
                         if (bufferLine[i - 1] == '"' && bufferLine[i] == '$') { 
@@ -127,6 +116,5 @@ Script::init(std::string path) {
         m_macros.push_back(macro); 
         //std::wcout << "Raw text: " << macro.rawText << "\n"; 
         //std::wcout << "Trigger word: " << macro.trigger << "\n"; 
-
     }
 }

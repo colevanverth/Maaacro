@@ -2,7 +2,7 @@
 
 Keyboard::Keyboard() {}
 
-Keyboard::queue(std::wstring input) {
+void Keyboard::queue(std::wstring input) {
     QueueComponent qc(input); 
     m_queue.push_back(qc); 
     m_queueSize += input.length(); 
@@ -24,24 +24,25 @@ std::wstring Keyboard::poll() {
     return L""; 
 }
 
-Keyboard::queueLeft(unsigned int amount) {
+void Keyboard::queueLeft(unsigned int amount) {
     QueueComponent qc(37, amount);  // 37 = Wincode for left arrow
     m_queue.push_back(qc); 
     m_queueSize += amount; 
 }
-Keyboard::queueRight(unsigned int amount) {
+
+void Keyboard::queueRight(unsigned int amount) {
     QueueComponent qc(39, amount);  // 39 = Wincode for right arrow
     m_queue.push_back(qc); 
     m_queueSize += amount;
 }
-Keyboard::queueBackSpace(unsigned int amount) { 
+
+void Keyboard::queueBackSpace(unsigned int amount) { 
     QueueComponent qc(8, amount);       // 8 = code for backspace
     m_queue.push_back(qc); 
     m_queueSize += amount; 
 }
 
-
-Keyboard::queue(std::wstring input, unsigned int amount) { 
+void Keyboard::queue(std::wstring input, unsigned int amount) { 
     std::wstring tempString = L""; 
     for (int i = 0; i < amount; ++i) { 
         tempString += input; 
@@ -50,7 +51,8 @@ Keyboard::queue(std::wstring input, unsigned int amount) {
     m_queue.push_back(qc); 
     m_queueSize += amount; 
 }
-Keyboard::sendQueue() {
+
+void Keyboard::sendQueue() {
     std::cout << "queue" << std::endl;
     
     auto keys = new INPUT[m_queueSize * 2]; 
@@ -92,7 +94,8 @@ Keyboard::sendQueue() {
     delete[] keys; 
   
 }               
-Keyboard::clearQueue() {
+
+void Keyboard::clearQueue() {
     m_queue.clear(); 
     m_queueSize = 0; 
 }           
