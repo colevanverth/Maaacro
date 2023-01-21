@@ -6,12 +6,14 @@ Script::Script (std::string pathname)
 void Script::expandMacro(const Macro & macro) {
     m_keyboard.queueBackSpace(macro.trigger.length() + 1); // We add one to get rid of the tab
     m_keyboard.queue(macro.rawText); // Queues the initial raw text. 
-    m_keyboard.queueLeft(macro.rawText.length() - macro.m_waypoints.at(1)); // Move caret to initial waypoint. 
     m_keyboard.sendQueue(); 
     m_keyboard.clearQueue();
  
-    unsigned int waypointCounter = 2; // Starts at two because caret is already at first waypoint.
+    unsigned int waypointCounter = 1; // Starts at two because caret is already at first waypoint.
     while (waypointCounter <= macro.m_waypoints.size()) { 
+        if (waypointCounter == 1) { 
+            m_keyboard.queueLeft(macro.rawText.length() - macro.m_waypoints.at(1)); // Move caret to initial waypoint. 
+        }
         if (m_keyboard.poll() == L"TAB") { 
             m_keyboard.queueBackSpace(1); // Deletes the tab
             m_keyboard.queueRight(macro.m_waypoints.at(waypointCounter) - macro.m_waypoints.at(waypointCounter - 1)); 
@@ -29,10 +31,23 @@ void Script::expandMacro(const Macro & macro) {
         else if (m_keyboard.poll() == L"ESC") {
             break;
         }
+        else {
+        // Move caret from current waypoint position to the mirror, and then the next mirror, and then all teh way bback
+        unsigned totalDistance = 0; 
+        /*for (unsigned int i = 0; i < macro.m_mirrors[waypointCounter].length(); ++i) { 
+            if (m_keyboard.poll() != L"") { 
+                //m_keyboard.queueLeft(macro.m_mirror[waypointCounter].at(i) - macro.m_waypoints[waypointCounter]);
+                //totalDistance += macro.m_mirror[waypointCounter].at(i) - macro.m_waypoints[waypointCounter];
+                //m_keyboard.queue(m_keyboard.poll());
+
+            }
+        }*/
+
+        }
         // TODO: Add support for mirrors
         // TODO: (Cole) Add special case for doing tabs so it doesnt break in some programs. 
     }
-}
+    }
 
 void Script::run() {
     init();
@@ -101,8 +116,13 @@ void Script::init() {
                             capture = false;
                             captureString = captureString.substr(1, captureString.length() - 2); // Remove dollar sign and quotation mark
                             auto indice = std::stoi(captureString); 
-                            //std::cout << position << std::endl; 
-                            macro.m_waypoints[indice] = position; 
+                            if (macro.m_waypoints.find(indice) != macro.m_waypoints.end()) { 
+                                macro.m_mirrors[indice].push_back(position); // Mirror is added
+                                std::cout << "Mirror at: " << position << std::endl;
+                            }
+                            else { 
+                                macro.m_waypoints[indice] = position; // Waypoint is added 
+                            }
                         }
                     }
                     else { 
