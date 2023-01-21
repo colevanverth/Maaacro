@@ -67,7 +67,7 @@ private:
         {65, Key(L"a")}, {66, Key(L"b")}, {67, Key(L"c")}, {68, Key(L"d")}, {69, Key(L"e")}, {70, Key(L"f")}, {71, Key(L"g")}, {72, Key(L"h")}, {73, Key(L"i")}, 
         {74, Key(L"j")}, {75, Key(L"k")}, {76, Key(L"l")}, {77, Key(L"m")}, {78, Key(L"n")}, {79, Key(L"o")}, {80, Key(L"p")}, {81, Key(L"q")}, {82, Key(L"r")}, 
         {83, Key(L"s")}, {84, Key(L"t")}, {85, Key(L"u")}, {86, Key(L"v")}, {87, Key(L"w")}, {88, Key(L"x")}, {89, Key(L"y")}, {90, Key(L"z")}, {9, Key(L"TAB")},
-        {32, Key(L"SPACE")}
+        {32, Key(L"SPACE")}, {27, Key(L"ESC")}, {17, Key(L"CTRL")}
     };
 
     // A vector containing individual `QueueComponent`s. Sent to OS with the `sendQueue` function. 

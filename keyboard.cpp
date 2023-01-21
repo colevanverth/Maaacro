@@ -13,9 +13,13 @@ std::wstring Keyboard::poll() {
     for (auto it = m_keys.begin(); it != m_keys.end(); it++) { 
         if (GetAsyncKeyState(it->first) && !it->second.cooldown) { 
             it->second.cooldown = true; 
-            return it->second.association; 
             // Special case goes in here. If z is pressed, and CTRL is also pressed, 
             // then we return L"CTRLZ" 
+            // checks if CTRL (key code 17) and z (key code 90) are on cooldown
+            if (m_keys.at(90).cooldown && m_keys.at(17).cooldown) {
+                return L"CTRLZ";
+            }
+            return it->second.association; 
         }
         if (!GetAsyncKeyState(it->first) && it->second.cooldown) { 
             it->second.cooldown = false; 

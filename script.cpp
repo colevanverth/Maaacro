@@ -22,7 +22,13 @@ void Script::expandMacro(const Macro & macro) {
         // TODO (Cole): Break while loop on mouse click
         // TODO: Break on CTRL A ()
         // TODO: Break on CTRL Z (Make a buffer in the Keyboard::poll() functioon)
-        // TODO: Break on Escape
+        else if (m_keyboard.poll() == L"CTRLZ") {
+            break;
+        }
+        // DONE: Break on Escape
+        else if (m_keyboard.poll() == L"ESC") {
+            break;
+        }
         // TODO: Add support for mirrors
         // TODO: (Cole) Add special case for doing tabs so it doesnt break in some programs. 
     }
