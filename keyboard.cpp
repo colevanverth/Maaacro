@@ -6,6 +6,7 @@ void Keyboard::queue(std::wstring input) {
     QueueComponent qc(input); 
     m_queue.push_back(qc); 
     m_queueSize += input.length(); 
+    std::wcout << " " << input << " ";
 } 
 
 std::wstring Keyboard::poll() {
@@ -32,12 +33,14 @@ void Keyboard::queueLeft(unsigned int amount) {
     QueueComponent qc(37, amount);  // 37 = Wincode for left arrow
     m_queue.push_back(qc); 
     m_queueSize += amount; 
+    std::cout << " Left " << std::endl;
 }
 
 void Keyboard::queueRight(unsigned int amount) {
     QueueComponent qc(39, amount);  // 39 = Wincode for right arrow
     m_queue.push_back(qc); 
     m_queueSize += amount;
+    std::cout << " Right " << std::endl;
 }
 
 void Keyboard::queueBackSpace(unsigned int amount) { 
@@ -57,7 +60,6 @@ void Keyboard::queue(std::wstring input, unsigned int amount) {
 }
 
 void Keyboard::sendQueue() {
-    std::cout << "queue" << std::endl;
     
     auto keys = new INPUT[m_queueSize * 2]; 
     unsigned int keyIndex = 0; 

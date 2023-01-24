@@ -9,42 +9,62 @@ void Script::expandMacro(const Macro & macro) {
     m_keyboard.sendQueue(); 
     m_keyboard.clearQueue();
  
-    unsigned int waypointCounter = 1; // Starts at two because caret is already at first waypoint.
+    unsigned int waypointCounter = 0; // Starts at two because caret is already at first waypoint.
+    std::cout << "size:" << macro.m_waypoints.size() << std::endl;
+    
+    // How many characters are added in mirror
+    unsigned int mirrorAdditions = 0; 
+
     while (waypointCounter <= macro.m_waypoints.size()) { 
-        if (waypointCounter == 1) { 
+        auto currentPoll = m_keyboard.poll(); 
+        if (waypointCounter == 0) { 
             m_keyboard.queueLeft(macro.rawText.length() - macro.m_waypoints.at(1)); // Move caret to initial waypoint. 
-        }
-        if (m_keyboard.poll() == L"TAB") { 
-            m_keyboard.queueBackSpace(1); // Deletes the tab
-            m_keyboard.queueRight(macro.m_waypoints.at(waypointCounter) - macro.m_waypoints.at(waypointCounter - 1)); 
             m_keyboard.sendQueue(); 
-            m_keyboard.clearQueue(); 
+            m_keyboard.clearQueue();
             waypointCounter++; 
         }
-        // TODO (Cole): Break while loop on mouse click
-        // TODO: Break on CTRL A ()
-        // TODO: Break on CTRL Z (Make a buffer in the Keyboard::poll() functioon)
-        else if (m_keyboard.poll() == L"CTRLZ") {
-            break;
-        }
-        // DONE: Break on Escape
-        else if (m_keyboard.poll() == L"ESC") {
-            break;
-        }
-        else {
-        // Move caret from current waypoint position to the mirror, and then the next mirror, and then all teh way bback
-        unsigned totalDistance = 0; 
-        /*for (unsigned int i = 0; i < macro.m_mirrors[waypointCounter].length(); ++i) { 
-            if (m_keyboard.poll() != L"") { 
-                //m_keyboard.queueLeft(macro.m_mirror[waypointCounter].at(i) - macro.m_waypoints[waypointCounter]);
-                //totalDistance += macro.m_mirror[waypointCounter].at(i) - macro.m_waypoints[waypointCounter];
-                //m_keyboard.queue(m_keyboard.poll());
-
+        if (currentPoll != L"") {
+            if (currentPoll == L"TAB") { 
+                if (waypointCounter != macro.m_waypoints.size()) {
+                    m_keyboard.queueBackSpace(1); // Deletes the tab
+                    m_keyboard.queueRight(macro.m_waypoints.at(waypointCounter + 1) - macro.m_waypoints.at(waypointCounter)); 
+                    m_keyboard.sendQueue(); 
+                    m_keyboard.clearQueue(); 
+                }
+                waypointCounter++; 
             }
-        }*/
-
+            else if (currentPoll == L"CTRLZ") { // Break on CTRLZ
+                break;
+            }
+            else if (currentPoll == L"ESC") { // Break on ESC
+                break;
+            }
+            else {
+                // The mirror logic
+                unsigned int distanceRight = 0; 
+                unsigned int lastPosition = macro.m_waypoints.at(waypointCounter); 
+                unsigned int totalDistance = 0; 
+                std::cout << "run" << std::endl;
+                for (unsigned int i = 0; i < macro.m_mirrors.at(waypointCounter).size(); ++i) { 
+                    distanceRight = macro.m_mirrors.at(waypointCounter).at(i) - lastPosition; 
+                    const unsigned int moveRight = distanceRight + mirrorAdditions; 
+                    m_keyboard.queueRight(moveRight);
+                  //  std::cout << "Distance right: " << distanceRight + mirrorAdditions << std::endl;
+                   // std::wcout << currentPoll << std::endl;
+                    totalDistance += distanceRight; // TODO; 
+                    m_keyboard.queue(currentPoll);
+                    lastPosition = macro.m_mirrors.at(waypointCounter).at(i); 
+                }
+                mirrorAdditions++;
+                //std::cout << "Distance left: " << totalDistance + ((mirrorAdditions) * macro.m_mirrors.at(waypointCounter).size()) << std::endl; 
+                m_keyboard.sendQueue(); 
+                m_keyboard.clearQueue();
+                m_keyboard.queueLeft(totalDistance + ((mirrorAdditions) * macro.m_mirrors.at(waypointCounter).size()));
+                m_keyboard.sendQueue(); 
+                m_keyboard.clearQueue();  
+              //  std::cout <i< "Mirror addition: " << mirrorAdditions << std::endl;
+            }
         }
-        // TODO: Add support for mirrors
         // TODO: (Cole) Add special case for doing tabs so it doesnt break in some programs. 
     }
     }
@@ -122,6 +142,7 @@ void Script::init() {
                             }
                             else { 
                                 macro.m_waypoints[indice] = position; // Waypoint is added 
+                                std::cout << "Waypoint at: " << position << std::endl;
                             }
                         }
                     }
